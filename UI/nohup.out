@@ -1,0 +1,45 @@
+/usr/bin/env: ‘node’: No such file or directory
+[19:24:57] Using gulpfile ~/hygieia/UI/gulpfile.js
+[19:24:57] Starting 'build'...
+[19:24:57] Starting 'clean'...
+[19:24:57] Finished 'clean' after 55 ms
+[19:24:57] Starting 'assets'...
+[19:24:57] Starting 'themes'...
+[19:24:57] Starting 'fonts'...
+[19:24:57] Starting 'js'...
+[19:24:57] Starting 'views'...
+[19:24:57] Starting 'test-data'...
+[19:25:06] Finished 'assets' after 8.48 s
+[19:25:06] Finished 'themes' after 8.48 s
+[19:25:06] Finished 'test-data' after 8.51 s
+[19:25:06] Finished 'views' after 8.64 s
+[19:25:06] Finished 'js' after 8.73 s
+[19:25:06] Finished 'fonts' after 9.15 s
+[19:25:06] Starting 'html'...
+[19:25:07] gulp-inject 1 files into index.html.
+[19:25:07] gulp-inject 155 files into index.html.
+[19:25:07] Finished 'html' after 234 ms
+[19:25:07] Finished 'build' after 9.46 s
+[19:25:07] Starting 'serve'...
+[19:25:07] Finished 'serve' after 145 ms
+[BS] Local URL: http://localhost:3000
+[BS] External URL: http://10.142.0.2:3000
+[BS] Serving files from: dist/
+[Proxy] { [Error: connect ECONNREFUSED 127.0.0.1:8080]
+  code: 'ECONNREFUSED',
+  errno: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8080 }
+[Proxy] { [Error: connect ECONNREFUSED 127.0.0.1:8080]
+  code: 'ECONNREFUSED',
+  errno: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8080 }
+[Proxy] { [Error: connect ECONNREFUSED 127.0.0.1:8080]
+  code: 'ECONNREFUSED',
+  errno: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8080 }
