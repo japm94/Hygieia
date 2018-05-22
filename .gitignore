@@ -1,4 +1,5 @@
 .DS_Store
+collectors/scm/.vscode/
 *.class
 
 # Mobile Tools for Java (J2ME)
