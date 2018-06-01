@@ -190,7 +190,13 @@
                     options: getOptions('Gitlab'),
                     uniqueOptions: getUniqueOptions('Gitlab')
 				};
-			}
+			} else if (ctrl.repoOption.name.indexOf("Phabricator") !== -1) {
+                item = {
+                    collectorId : _.find(ctrl.collectors, { name: 'Phabricator' }).id,
+                      options: getOptions('Phabricator'),
+                      uniqueOptions: getUniqueOptions('Phabricator')
+                };
+            }
 			return collectorData.createCollectorItem(item);
 		}
 
