@@ -5,18 +5,15 @@ import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitRepo;
 import com.capitalone.dashboard.phabricator.PhabricatorAPIEndpoint;
 import com.capitalone.dashboard.phabricator.PhabricatorRestCall;
-import com.capitalone.dashboard.util.Supplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -94,7 +91,7 @@ public class DefaultPhabricatorClient implements GitClient {
                 String commitIdentf = str(commitDetail, "identifier");
 
                 // Get Parents
-                ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitDetails, apiToken, commitIdentf, callsignRepo);
+                ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitParents, apiToken, commitIdentf, callsignRepo);
                 JSONObject commitParent = paresAsObject(commitParentsRest);
                 JSONArray parents = (JSONArray) commitParent.get("result");
                 List<String> parentShas = new ArrayList<>(parents);

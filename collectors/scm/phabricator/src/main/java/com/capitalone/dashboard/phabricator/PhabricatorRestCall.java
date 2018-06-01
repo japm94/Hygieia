@@ -11,21 +11,17 @@ import org.springframework.web.client.RestOperations;
 import java.net.URI;
 import java.util.Arrays;
 
-/**
- * Implementation of a git client to connect to an Phabricator <i>Server</i>.
- */
 
 public class PhabricatorRestCall {
     private static final Log LOG = LogFactory.getLog(PhabricatorRestCall.class);
 
-    private final GitSettings settings;
+    public final GitSettings settings;
 
-    private final RestOperations restOperations;
-
-    private PhabricatorAPIEndpoint endpoint;
+    public final RestOperations restOperations;
 
     @Autowired
-    public PhabricatorRestCall(GitSettings settings, Supplier<RestOperations> restOperationsSupplier) {
+    public PhabricatorRestCall(GitSettings settings,
+                               Supplier<RestOperations> restOperationsSupplier) {
         this.settings = settings;
         this.restOperations = restOperationsSupplier.get();
     }
