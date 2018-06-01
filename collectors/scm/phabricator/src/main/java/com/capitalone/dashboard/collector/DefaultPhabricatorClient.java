@@ -21,7 +21,6 @@ import org.springframework.web.client.RestOperations;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,19 +31,12 @@ import java.util.List;
 public class DefaultPhabricatorClient implements GitClient {
     private static final Log LOG = LogFactory.getLog(DefaultPhabricatorClient.class);
 
-    private final GitSettings settings;
-
-    private final RestOperations restOperations;
+    private GitSettings settings;
 
     private PhabricatorAPIEndpoint endpoint;
 
     private PhabricatorRestCall restCall;
 
-    @Autowired
-    public DefaultPhabricatorClient(GitSettings settings, Supplier<RestOperations> restOperationsSupplier) {
-        this.settings = settings;
-        this.restOperations = restOperationsSupplier.get();
-    }
 
     @SuppressWarnings("PMD.NPathComplexity")
     @Override
@@ -102,7 +94,7 @@ public class DefaultPhabricatorClient implements GitClient {
                 String commitIdentf = str(commitDetail, "identifier");
 
                 // Get Parents
-                ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitParents, apiToken, commitIdentf, callsignRepo);
+                ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitDetails, apiToken, commitIdentf, callsignRepo);
                 JSONObject commitParent = paresAsObject(commitParentsRest);
                 JSONArray parents = (JSONArray) commitParent.get("result");
                 List<String> parentShas = new ArrayList<>(parents);

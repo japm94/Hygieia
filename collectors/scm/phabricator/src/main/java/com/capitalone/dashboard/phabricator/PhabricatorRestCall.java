@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
@@ -16,7 +15,6 @@ import java.util.Arrays;
  * Implementation of a git client to connect to an Phabricator <i>Server</i>.
  */
 
-@Component("phabricator")
 public class PhabricatorRestCall {
     private static final Log LOG = LogFactory.getLog(PhabricatorRestCall.class);
 
