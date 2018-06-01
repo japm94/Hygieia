@@ -23,6 +23,7 @@ public class PhabricatorAPIEndpoint {
     private static final String COMMITS_API = "/diffusion.querycommits";
     private static final String REPOSITORY_API = "/diffusion.repository.search";
     private static final String DETAILSCOMMIT_API = "/diffusion.commit.search";
+    private static final String PARENTSCOMMIT_API = "/diffusion.commitparentsquery";
     private static final String PHABRICATOR_HOST_NAME = "pb-dc.alm-latam.accenture.com";
 
     // package for junit
@@ -60,6 +61,26 @@ public class PhabricatorAPIEndpoint {
                 .host(host)
                 .pathSegment(SEGMENT_API)
                 .path(COMMITS_API)
+                .build(true).toUri();
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Rest Url: " + uri);
+        }
+
+        return uri;
+    }
+
+    public URI buildParentURL() throws URISyntaxException {
+
+        String protocol = getProtocol();
+        String host = getRepoHost();
+
+        UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
+
+        URI uri = builder.scheme(protocol)
+                .host(host)
+                .pathSegment(SEGMENT_API)
+                .path(PARENTSCOMMIT_API)
                 .build(true).toUri();
 
         if (LOG.isDebugEnabled()) {

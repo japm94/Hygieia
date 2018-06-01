@@ -4,6 +4,7 @@ import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitRepo;
 import com.capitalone.dashboard.phabricator.PhabricatorAPIEndpoint;
+import com.capitalone.dashboard.phabricator.PhabricatorRestCall;
 import com.capitalone.dashboard.util.Supplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +38,8 @@ public class DefaultPhabricatorClient implements GitClient {
 
     private PhabricatorAPIEndpoint endpoint;
 
+    private PhabricatorRestCall restCall;
+
     @Autowired
     public DefaultPhabricatorClient(GitSettings settings, Supplier<RestOperations> restOperationsSupplier) {
         this.settings = settings;
@@ -57,19 +60,27 @@ public class DefaultPhabricatorClient implements GitClient {
             URI repoEndpoint = endpoint.buildRepoUrl();
             URI commitEndpoint = endpoint.buildCommitUrl();
             URI commitDetails = endpoint.buildCommitDetailUrl();
+            URI commitParents = endpoint.buildParentURL();
 
-            ResponseEntity<String> repoAPI = repoRestCall(repoEndpoint, apiToken, repo.getRepoUrl());
+            // Get Repo PHID and CALLSIGN
+            ResponseEntity<String> repoAPI = restCall.repoRestCall(repoEndpoint, apiToken, repo.getRepoUrl());
             JSONObject repoJSON = paresAsObject(repoAPI);
             JSONObject repoResult = (JSONObject) repoJSON.get("result");
             JSONArray repoData = (JSONArray) repoResult.get("data");
             String repositoryPHID = null;
+            String callsignRepo = null;
             if (repoData != null) {
-                for (Object phid : repoData) {
-                    repositoryPHID = str((JSONObject) phid, "phid");
+                for (Object repoValues : repoData) {
+                    JSONObject repoOject = (JSONObject) repoValues;
+                    repositoryPHID = str((JSONObject) repoOject, "phid");
+                    JSONObject fields = (JSONObject) repoOject.get("fields");
+                    callsignRepo = str((JSONObject) fields, "callsign");
+
                 }
             }
 
-            ResponseEntity<String> commitAPI = commitRestCall(commitEndpoint, apiToken, repositoryPHID);
+            // Get Commit Values
+            ResponseEntity<String> commitAPI = restCall.commitRestCall(commitEndpoint, apiToken, repositoryPHID);
             JSONObject jsonParentObject = paresAsObject(commitAPI);
             JSONObject resultCommitAPI = (JSONObject) jsonParentObject.get("result");
             JSONArray jsonArray = (JSONArray) resultCommitAPI.get("data");
@@ -79,23 +90,22 @@ public class DefaultPhabricatorClient implements GitClient {
                 JSONObject jsonObject = (JSONObject) item;
                 String commitPHID = str(jsonObject, "phid");
 
-                ResponseEntity<String> commitDetailAPI = commitDetailRestCall(commitDetails, apiToken, commitPHID);
-                JSONObject commitValues = paresAsObject(commitDetailAPI);
+                ResponseEntity<String> commitDetailRest = restCall.commitDetailRestCall(commitDetails, apiToken, commitPHID);
+                JSONObject commitValues = paresAsObject(commitDetailRest);
                 JSONObject resultCommitDetail = (JSONObject) commitValues.get("result");
                 JSONObject dataCommitDetail = (JSONObject) resultCommitDetail.get("data");
-                JSONObject commitDetail = (JSONObject) dataCommitDetail.get("phid");
-
+                JSONObject commitDetail = (JSONObject) dataCommitDetail.get(commitPHID);
                 String sha = str(commitDetail, "id");
                 String author = str(commitDetail, "author");
                 String message = str(commitDetail, "summary");
                 long timestamp = Long.valueOf(str(commitDetail, "epoch"));
-                JSONArray parents = (JSONArray) jsonObject.get("hashes");
-                List<String> parentShas = new ArrayList<>();
-                if (parents != null) {
-                    for (Object parentObj : parents) {
-                        parentShas.add(str((JSONObject) parentObj, "id"));
-                    }
-                }
+                String commitIdentf = str(commitDetail, "identifier");
+
+                // Get Parents
+                ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitParents, apiToken, commitIdentf, callsignRepo);
+                JSONObject commitParent = paresAsObject(commitParentsRest);
+                JSONArray parents = (JSONArray) commitParent.get("result");
+                List<String> parentShas = new ArrayList<>(parents);
 
                 Commit commit = new Commit();
                 commit.setTimestamp(System.currentTimeMillis());
@@ -120,58 +130,6 @@ public class DefaultPhabricatorClient implements GitClient {
         }
 
         return commits;
-    }
-
-    private ResponseEntity<String> repoRestCall(URI uri, String phabricatorToken, String repoURL) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("POST " + uri);
-        }
-
-        //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                + "\"constraints\": {\"uris\": [\"" + repoURL + "\"]},"
-                + "\"queryKey\": \"active\"}";
-
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
-
-    }
-
-    private ResponseEntity<String> commitRestCall(URI uri, String phabricatorToken, String repositoryPHID) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("POST " + uri);
-        }
-
-        //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                + " \"constraints\":{ \"repositories\": [\"" + repositoryPHID + "\"]}}";
-
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
-
-    }
-
-    private ResponseEntity<String> commitDetailRestCall(URI uri, String phabricatorToken, String commitPHID) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("POST " + uri);
-        }
-
-        //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"}, "
-                + "\"phids\":[\"" + commitPHID + "\"]}";
-
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
-
-    }
-
-    private HttpHeaders headers() {
-        //Phabricator API Header
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
-        return headers;
     }
 
     private JSONObject paresAsObject(ResponseEntity<String> response) {
