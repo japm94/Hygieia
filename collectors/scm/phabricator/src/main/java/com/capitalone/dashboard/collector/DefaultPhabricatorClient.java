@@ -94,7 +94,13 @@ public class DefaultPhabricatorClient implements GitClient {
                 ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitParents, apiToken, commitIdentf, callsignRepo);
                 JSONObject commitParent = paresAsObject(commitParentsRest);
                 JSONArray parents = (JSONArray) commitParent.get("result");
-                List<String> parentShas = new ArrayList<>(parents);
+                List<String> parentShas = new ArrayList<String>();
+                if (parents != null) {
+                    for (int i = 0; i < parents.size(); i++) {
+                        parentShas.add(parents.toString());
+                    }
+                }
+
 
                 Commit commit = new Commit();
                 commit.setTimestamp(System.currentTimeMillis());
