@@ -11,7 +11,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.capitalone.dashboard.collector.GitSettings;
 
-@Component
 public class PhabricatorAPIEndpoint {
 
     private static final Log LOG = LogFactory.getLog(PhabricatorAPIEndpoint.class);
