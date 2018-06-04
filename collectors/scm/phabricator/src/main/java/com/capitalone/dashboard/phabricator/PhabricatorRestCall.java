@@ -6,12 +6,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
 import java.util.Arrays;
 
-
+@Component
 public class PhabricatorRestCall {
     private static final Log LOG = LogFactory.getLog(PhabricatorRestCall.class);
 

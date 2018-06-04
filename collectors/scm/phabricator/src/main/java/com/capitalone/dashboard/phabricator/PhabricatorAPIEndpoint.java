@@ -6,10 +6,12 @@ import java.net.URISyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.capitalone.dashboard.collector.GitSettings;
 
+@Component
 public class PhabricatorAPIEndpoint {
 
     private static final Log LOG = LogFactory.getLog(PhabricatorAPIEndpoint.class);
