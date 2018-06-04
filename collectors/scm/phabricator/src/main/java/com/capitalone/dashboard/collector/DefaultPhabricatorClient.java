@@ -31,20 +31,12 @@ import java.util.List;
 public class DefaultPhabricatorClient implements GitClient {
     private static final Log LOG = LogFactory.getLog(DefaultPhabricatorClient.class);
 
-    private final RestOperations restOperations;
-
-    private final GitSettings settings;
+    private GitSettings settings;
 
     private PhabricatorAPIEndpoint endpoint;
 
     private PhabricatorRestCall restCall;
 
-    @Autowired
-    public DefaultPhabricatorClient(GitSettings settings,
-                                        Supplier<RestOperations> restOperationsSupplier) {
-        this.settings = settings;
-        this.restOperations = restOperationsSupplier.get();
-    }
 
     @SuppressWarnings("PMD.NPathComplexity")
     @Override
