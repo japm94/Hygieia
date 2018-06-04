@@ -24,7 +24,7 @@ import java.util.List;
  * Implementation of a git client to connect to an Phabricator <i>Server</i>.
  */
 
-@Component("phabricator")
+@Component
 public class DefaultPhabricatorClient implements GitClient {
     private static final Log LOG = LogFactory.getLog(DefaultPhabricatorClient.class);
 
