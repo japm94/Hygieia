@@ -1,0 +1,40 @@
+{
+	"result": {
+		"data": [
+			{
+				"id": 79,
+				"type": "REPO",
+				"phid": "PHID-REPO-hkhdlgvdfofe5u3rfdqm",
+				"fields": {
+					"name": "Phabricator Repo Test",
+					"vcs": "git",
+					"callsign": "PBREPOTEST",
+					"shortName": "pbrepotest",
+					"status": "active",
+					"isImporting": false,
+					"spacePHID": "PHID-SPCE-y4ciprkwtjiryrnbw73m",
+					"dateCreated": 1528138183,
+					"dateModified": 1528138212,
+					"policy": {
+						"view": "users",
+						"edit": "admin",
+						"diffusion.push": "users"
+					}
+				},
+				"attachments": {}
+			}
+		],
+		"maps": {},
+		"query": {
+			"queryKey": "active"
+		},
+		"cursor": {
+			"limit": 100,
+			"after": null,
+			"before": null,
+			"order": null
+		}
+	},
+	"error_code": null,
+	"error_info": null
+}

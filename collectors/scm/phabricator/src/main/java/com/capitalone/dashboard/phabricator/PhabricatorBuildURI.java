@@ -12,9 +12,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.capitalone.dashboard.collector.GitSettings;
 
 @Component
-public class PhabricatorAPIEndpoint {
+public class PhabricatorBuildURI {
 
-    private static final Log LOG = LogFactory.getLog(PhabricatorAPIEndpoint.class);
+    private static final Log LOG = LogFactory.getLog(PhabricatorBuildURI.class);
 
     private GitSettings settings;
 

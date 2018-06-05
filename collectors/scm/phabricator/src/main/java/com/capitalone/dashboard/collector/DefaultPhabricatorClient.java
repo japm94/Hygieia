@@ -3,7 +3,7 @@ package com.capitalone.dashboard.collector;
 import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitRepo;
-import com.capitalone.dashboard.phabricator.PhabricatorAPIEndpoint;
+import com.capitalone.dashboard.phabricator.PhabricatorBuildURI;
 import com.capitalone.dashboard.phabricator.PhabricatorRestCall;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,7 +30,7 @@ public class DefaultPhabricatorClient implements GitClient {
 
     private GitSettings settings;
 
-    private PhabricatorAPIEndpoint endpoint;
+    private PhabricatorBuildURI endpoint;
 
     private PhabricatorRestCall restCall;
 
@@ -52,8 +52,8 @@ public class DefaultPhabricatorClient implements GitClient {
             URI commitParents = endpoint.buildParentURL();
 
             // Get Repo PHID and CALLSIGN
-            ResponseEntity<String> repoAPI = restCall.repoRestCall(repoEndpoint, apiToken, repo.getRepoUrl());
-            JSONObject repoJSON = paresAsObject(repoAPI);
+            ResponseEntity<String> repoURI = restCall.repoRestCall(repoEndpoint, apiToken, repo.getRepoUrl());
+            JSONObject repoJSON = paresAsObject(repoURI);
             JSONObject repoResult = (JSONObject) repoJSON.get("result");
             JSONArray repoData = (JSONArray) repoResult.get("data");
             String repositoryPHID = null;
@@ -69,8 +69,8 @@ public class DefaultPhabricatorClient implements GitClient {
             }
 
             // Get Commit Values
-            ResponseEntity<String> commitAPI = restCall.commitRestCall(commitEndpoint, apiToken, repositoryPHID);
-            JSONObject jsonParentObject = paresAsObject(commitAPI);
+            ResponseEntity<String> commitURI = restCall.commitRestCall(commitEndpoint, apiToken, repositoryPHID);
+            JSONObject jsonParentObject = paresAsObject(commitURI);
             JSONObject resultCommitAPI = (JSONObject) jsonParentObject.get("result");
             JSONArray jsonArray = (JSONArray) resultCommitAPI.get("data");
 
@@ -79,8 +79,8 @@ public class DefaultPhabricatorClient implements GitClient {
                 JSONObject jsonObject = (JSONObject) item;
                 String commitPHID = str(jsonObject, "phid");
 
-                ResponseEntity<String> commitDetailRest = restCall.commitDetailRestCall(commitDetails, apiToken, commitPHID);
-                JSONObject commitValues = paresAsObject(commitDetailRest);
+                ResponseEntity<String> commitDetailURI = restCall.commitDetailRestCall(commitDetails, apiToken, commitPHID);
+                JSONObject commitValues = paresAsObject(commitDetailURI);
                 JSONObject resultCommitDetail = (JSONObject) commitValues.get("result");
                 JSONObject dataCommitDetail = (JSONObject) resultCommitDetail.get("data");
                 JSONObject commitDetail = (JSONObject) dataCommitDetail.get(commitPHID);
