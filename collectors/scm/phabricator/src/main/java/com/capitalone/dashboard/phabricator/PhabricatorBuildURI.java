@@ -20,9 +20,9 @@ public class PhabricatorBuildURI {
 
     private static final String DEFAULT_PROTOCOL = "https";
     private static final String SEGMENT_API = "api";
-    private static final String COMMITS_API = "/diffusion.querycommits";
+    private static final String COMMITS_API = "/diffusion.commit.search";
     private static final String REPOSITORY_API = "/diffusion.repository.search";
-    private static final String DETAILSCOMMIT_API = "/diffusion.commit.search";
+    private static final String DETAILSCOMMIT_API = "/diffusion.querycommits";
     private static final String PARENTSCOMMIT_API = "/diffusion.commitparentsquery";
     private static final String PHABRICATOR_HOST_NAME = "pb-dc.alm-latam.accenture.com";
 

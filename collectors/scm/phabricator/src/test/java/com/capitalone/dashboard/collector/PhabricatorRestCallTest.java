@@ -36,8 +36,6 @@ public class PhabricatorRestCallTest {
         String jsonResponse3 = getJson("/phabricator-server/commitdetail.json");
         String jsonResponse4 = getJson("/phabricator-server/commitparents.json");
 
-        settings.setPageSize(1);
-
         GitRepo repo = new GitRepo();
         String repoUrl = "https://pb-dc.alm-latam.accenture.com/source/rdo.git";
         repo.setRepoUrl(repoUrl);
@@ -70,7 +68,7 @@ public class PhabricatorRestCallTest {
     }
 
     private String getJson(String fileName) throws IOException {
-        InputStream inputStream = DefaultPhabricatorClientTest.class.getResourceAsStream(fileName);
+        InputStream inputStream = PhabricatorRestCallTest.class.getResourceAsStream(fileName);
         return IOUtils.toString(inputStream);
     }
 }
