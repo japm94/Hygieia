@@ -31,17 +31,12 @@ public class PhabricatorRestCallTest {
     @Test
     public void testGetCommits() throws IOException {
         // Note that there always is paging even if results only take 1 page
-        String jsonResponse1 = getJson("/phabricator-server/repo.json");
-        String jsonResponse2 = getJson("/phabricator-server/commit.json");
-        String jsonResponse3 = getJson("/phabricator-server/commitdetail.json");
-        String jsonResponse4 = getJson("/phabricator-server/commitparents.json");
+        String jsonResponse1 = getJson("repo.json");
+        String jsonResponse2 = getJson("commit.json");
+        String jsonResponse3 = getJson("commitdetail.json");
+        String jsonResponse4 = getJson("commitparents.json");
 
-        GitRepo repo = new GitRepo();
-        String repoUrl = "https://pb-dc.alm-latam.accenture.com/source/rdo.git";
-        repo.setRepoUrl(repoUrl);
-        repo.getOptions().put("url", repoUrl);
-        repo.setBranch("master");
-        String apiToken = "api-bmoeekxkmv6cfo6ry6jwjr2bbolw";
+        String apiToken = "";
 
         URI repoURI = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.repository.search");
         String repoURL = "https://pb-dc.alm-latam.accenture.com/source/pbrepotest.git";
@@ -53,18 +48,11 @@ public class PhabricatorRestCallTest {
         URI commitdetailURI = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.querycommits");
         String commitPHID = "PHID-CMIT-tcj6u3qoi3dqklnj3q4s";
 
-        URI commitParentsURI = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.commitparentsquery");
+        String commitParentsURI = "https://pb-dc.alm-latam.accenture.com/api/diffusion.commitparentsquery";
         String commitIdentif = "3f83c3a0f1acdc3f1aefbd8748920f3c7c5bee3a";
         String repoCallsign = "PBREPOTEST";
 
-        when(restCall.repoRestCall(repoURI, apiToken, repoURL))
-                .thenReturn(new ResponseEntity<>(jsonResponse1, HttpStatus.OK));
-        when(restCall.commitRestCall(commitURI, apiToken, repoPHID))
-                .thenReturn(new ResponseEntity<>(jsonResponse2, HttpStatus.OK));
-        when(restCall.commitDetailRestCall(commitdetailURI, apiToken, commitPHID))
-                .thenReturn(new ResponseEntity<>(jsonResponse3, HttpStatus.OK));
-        when(restCall.commitParentsRestCall(commitParentsURI, apiToken, commitIdentif, repoCallsign))
-                .thenReturn(new ResponseEntity<>(jsonResponse4, HttpStatus.OK));
+
     }
 
     private String getJson(String fileName) throws IOException {
