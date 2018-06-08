@@ -1,57 +1,65 @@
 package com.capitalone.dashboard.collector;
 
-import com.capitalone.dashboard.model.GitRepo;
 import com.capitalone.dashboard.phabricator.PhabricatorRestCall;
-import com.capitalone.dashboard.util.Supplier;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.ParseException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestOperations;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.util.Arrays;
 
-import static org.mockito.Mockito.when;
 
-@Component
 public class PhabricatorRestCallTest {
-    @Mock
-    private GitSettings settings;
 
-    @Mock
-    private PhabricatorRestCall restCall;
+    PhabricatorRestCall rest = new PhabricatorRestCall();
+
+    private final String repoUrl = "https://pb-dc.alm-latam.accenture.com/source/pbrepotest.git";
+
+    private final String repoURI = "https://pb-dc.alm-latam.accenture.com/api/diffusion.repository.search";
+    private final String commitURI = "https://pb-dc.alm-latam.accenture.com/api/diffusion.commit.search";
+    private final String commitdetailURI = "https://pb-dc.alm-latam.accenture.com/api/diffusion.querycommits";
+    private final String commitParentsURI = "https://pb-dc.alm-latam.accenture.com/api/diffusion.commitparentsquery";
+    private final String repoPHID = "PHID-REPO-hkhdlgvdfofe5u3rfdqm";
+    private final String commitPHID = "PHID-CMIT-tcj6u3qoi3dqklnj3q4s";
+    private final String apiToken = "api-bmoeekxkmv6cfo6ry6jwjr2bbolw";
+    private final String commitIdentif = "3f83c3a0f1acdc3f1aefbd8748920f3c7c5bee3a";
+    private final String repoCallsign = "PBREPOTEST";
 
     @Test
-    public void testGetCommits() throws IOException {
-        // Note that there always is paging even if results only take 1 page
-        String jsonResponse1 = getJson("repo.json");
-        String jsonResponse2 = getJson("commit.json");
-        String jsonResponse3 = getJson("commitdetail.json");
-        String jsonResponse4 = getJson("commitparents.json");
+    public void repoRestCallTest() throws IOException, UnirestException, ParseException {
+        String repoJson = getJson("/phabricator/repo.json");
+        JSONObject response = rest.repoRestCall(repoURI, apiToken, repoUrl);
+        String json = response.toString();
+        Assert.assertEquals(repoJson, json);
+    }
 
-        String apiToken = "";
+    @Test
+    public void commitRestCallTest() throws IOException, UnirestException {
+        String commitJson = getJson("/phabricator/commit.json");
+        JSONArray response = rest.commitRestCall(commitURI, apiToken, repoPHID);
+        String json = response.toString();
+        Assert.assertEquals(commitJson, json);
+    }
 
-        URI repoURI = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.repository.search");
-        String repoURL = "https://pb-dc.alm-latam.accenture.com/source/pbrepotest.git";
+    @Test
+    public void commitDetailRestCallTest() throws IOException, UnirestException {
+        String commitDetailJson = getJson("/phabricator/commitdetail.json");
+        JSONObject response = rest.commitDetailRestCall(commitdetailURI, apiToken, commitPHID);
+        String json = response.toString();
+        Assert.assertEquals(commitDetailJson, json);
 
+    }
 
-        URI commitURI = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.commit.search");
-        String repoPHID = "PHID-REPO-hkhdlgvdfofe5u3rfdqm";
-
-        URI commitdetailURI = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.querycommits");
-        String commitPHID = "PHID-CMIT-tcj6u3qoi3dqklnj3q4s";
-
-        String commitParentsURI = "https://pb-dc.alm-latam.accenture.com/api/diffusion.commitparentsquery";
-        String commitIdentif = "3f83c3a0f1acdc3f1aefbd8748920f3c7c5bee3a";
-        String repoCallsign = "PBREPOTEST";
-
+    @Test
+    public void commitParentsRestCallTest() throws IOException, UnirestException {
+        String commitParentsJson = getJson("/phabricator/commitparents.json");
+        JSONArray response = rest.commitParentsRestCall(commitParentsURI, apiToken, commitIdentif, repoCallsign);
+        String json = response.toString();
+        Assert.assertEquals(commitParentsJson, json);
 
     }
 

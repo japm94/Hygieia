@@ -5,17 +5,14 @@ import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitRepo;
 import com.capitalone.dashboard.phabricator.PhabricatorBuildURI;
 import com.capitalone.dashboard.phabricator.PhabricatorRestCall;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.http.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,61 +43,40 @@ public class DefaultPhabricatorClient implements GitClient {
             String apiToken = settings.getToken();
 
             //Phabricator endpoints
-            URI repoEndpoint = endpoint.buildRepoUrl();
-            URI commitEndpoint = endpoint.buildCommitUrl();
-            URI commitDetails = endpoint.buildCommitDetailUrl();
-            URI commitParents = endpoint.buildParentURL();
+            String repoURL = endpoint.buildRepoUrl();
+            String commitURL = endpoint.buildCommitUrl();
+            String commitDetailsURL = endpoint.buildCommitDetailUrl();
+            String commitParentsURL = endpoint.buildParentURL();
 
             // Get Repo PHID and CALLSIGN
-            ResponseEntity<String> repoURI = restCall.repoRestCall(repoEndpoint, apiToken, repo.getRepoUrl());
-            JSONObject repoJSON = paresAsObject(repoURI);
-            JSONObject repoResult = (JSONObject) repoJSON.get("result");
-            JSONArray repoData = (JSONArray) repoResult.get("data");
-            String repositoryPHID = null;
-            String callsignRepo = null;
-            if (repoData != null) {
-                for (Object repoValues : repoData) {
-                    JSONObject repoOject = (JSONObject) repoValues;
-                    repositoryPHID = str((JSONObject) repoOject, "phid");
-                    JSONObject fields = (JSONObject) repoOject.get("fields");
-                    callsignRepo = str((JSONObject) fields, "callsign");
-
-                }
-            }
+            JSONObject repoValues = restCall.repoRestCall(repoURL, apiToken, repo.getRepoUrl());
+            String repositoryPHID = repoValues.getString("repoPHID");
+            String callsignRepo = repoValues.getString("callsign");
 
             // Get Commit Values
-            ResponseEntity<String> commitURI = restCall.commitRestCall(commitEndpoint, apiToken, repositoryPHID);
-            JSONObject jsonParentObject = paresAsObject(commitURI);
-            JSONObject resultCommitAPI = (JSONObject) jsonParentObject.get("result");
-            JSONArray jsonArray = (JSONArray) resultCommitAPI.get("data");
+            JSONArray commitValues = restCall.commitRestCall(commitURL, apiToken, repositoryPHID);
 
-            for (Object item : jsonArray) {
 
-                JSONObject jsonObject = (JSONObject) item;
-                String commitPHID = str(jsonObject, "phid");
+            for (int i = 0; i < commitValues.length(); i++) {
 
-                ResponseEntity<String> commitDetailURI = restCall.commitDetailRestCall(commitDetails, apiToken, commitPHID);
-                JSONObject commitValues = paresAsObject(commitDetailURI);
-                JSONObject resultCommitDetail = (JSONObject) commitValues.get("result");
-                JSONObject dataCommitDetail = (JSONObject) resultCommitDetail.get("data");
-                JSONObject commitDetail = (JSONObject) dataCommitDetail.get(commitPHID);
-                String sha = str(commitDetail, "id");
-                String author = str(commitDetail, "author");
-                String message = str(commitDetail, "summary");
-                long timestamp = Long.valueOf(str(commitDetail, "epoch"));
-                String commitIdentf = str(commitDetail, "identifier");
+                JSONObject obj = commitValues.getJSONObject(i);
+                String commitPHID = obj.getString("phid");
+
+                JSONObject commitDetail = restCall.commitDetailRestCall(commitDetailsURL, apiToken, commitPHID);
+                String sha = commitDetail.getString("id");
+                String author = commitDetail.getString("author");
+                String message = commitDetail.getString("summary");
+                long timestamp = Long.valueOf(commitDetail.getString("epoch"));
+                String commitIdentf = commitDetail.getString("identifier");
 
                 // Get Parents
-                ResponseEntity<String> commitParentsRest = restCall.commitParentsRestCall(commitParents, apiToken, commitIdentf, callsignRepo);
-                JSONObject commitParent = paresAsObject(commitParentsRest);
-                JSONArray parents = (JSONArray) commitParent.get("result");
+                JSONArray commitParents = restCall.commitParentsRestCall(commitParentsURL, apiToken, commitIdentf, callsignRepo);
                 List<String> parentShas = new ArrayList<String>();
-                if (parents != null) {
-                    for (int i = 0; i < parents.size(); i++) {
-                        parentShas.add(parents.toString());
+                if (commitParents != null) {
+                    for (int j = 0; j < commitParents.length(); j++) {
+                        parentShas.add(commitParents.getString(j));
                     }
                 }
-
 
                 Commit commit = new Commit();
                 commit.setTimestamp(System.currentTimeMillis());
@@ -122,18 +98,11 @@ public class DefaultPhabricatorClient implements GitClient {
             LOG.error("Failed to obtain information from API", re);
         } catch (URISyntaxException e) {
             LOG.error("Invalid uri: " + e.getMessage());
+        } catch (UnirestException e) {
+            LOG.error("Error", e);
         }
 
         return commits;
-    }
-
-    private JSONObject paresAsObject(ResponseEntity<String> response) {
-        try {
-            return (JSONObject) new JSONParser().parse(response.getBody());
-        } catch (ParseException pe) {
-            LOG.error(pe.getMessage());
-        }
-        return new JSONObject();
     }
 
     private String str(JSONObject json, String key) {

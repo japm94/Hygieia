@@ -27,7 +27,7 @@ public class GitRepoTests {
         gitRepo3=new GitRepo();
         gitRepo3.setRepoUrl("https://phabricator.com/capitalone/Hygieas.git");
         gitRepo3.setBranch("master");
-        }
+	}
 	
 	
 	

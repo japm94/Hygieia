@@ -1,98 +1,107 @@
 package com.capitalone.dashboard.phabricator;
 
-import com.capitalone.dashboard.collector.GitSettings;
-import com.capitalone.dashboard.util.Supplier;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestOperations;
-
-import java.net.URI;
-import java.util.Arrays;
 
 @Component
 public class PhabricatorRestCall {
     private static final Log LOG = LogFactory.getLog(PhabricatorRestCall.class);
 
-    public final GitSettings settings;
 
-    public final RestOperations restOperations;
-
-    @Autowired
-    public PhabricatorRestCall(GitSettings settings,
-                               Supplier<RestOperations> restOperationsSupplier) {
-        this.settings = settings;
-        this.restOperations = restOperationsSupplier.get();
-    }
-
-    public ResponseEntity<String> repoRestCall(URI uri, String phabricatorToken, String repoURL) {
+    public JSONObject repoRestCall(String uri, String phabricatorToken, String repoURL) throws UnirestException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                + "\"constraints\": {\"uris\": [\"" + repoURL + "\"]},"
-                + "\"queryKey\": \"active\"}";
+        JsonNode response = Unirest.post(uri)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body("params={\"__conduit__\":{\"token\":\""+phabricatorToken+"\"}," +
+                        "\"constraints\": {\"uris\": [\""+repoURL+"\"]}," +
+                        "\"queryKey\": \"active\"}").asJson().getBody();
 
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject repoResult = response.getObject().getJSONObject("result");
+        JSONArray repoData = repoResult.getJSONArray("data");
+        String repoPHID = null;
+        String repoCallsign = null;
+
+        for (int i = 0; i< repoData.length(); i++){
+            JSONObject obj = repoData.getJSONObject(i);
+            repoPHID = obj.getString("phid");
+            JSONObject fields = (JSONObject) obj.get("fields");
+            repoCallsign = fields.getString("callsign");
+        }
+
+        String values = "{ \"repoPHID\":\""+repoPHID+"\", \"callsign\":\""+repoCallsign+"\"}";
+        JSONObject repoJSON = new JSONObject(values);
+        return repoJSON;
 
     }
 
-    public ResponseEntity<String> commitRestCall(URI uri, String phabricatorToken, String repositoryPHID) {
+    public JSONArray commitRestCall(String uri, String phabricatorToken, String repositoryPHID) throws UnirestException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                + " \"constraints\":{ \"repositories\": [\"" + repositoryPHID + "\"]}}";
+        JsonNode response = Unirest.post(uri)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body("params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
+                        + " \"constraints\":{ \"repositories\": [\"" + repositoryPHID + "\"]}}").asJson().getBody();
 
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject commitResult = response.getObject().getJSONObject("result");
+        JSONArray commitData = (JSONArray) commitResult.get("data");
+
+        return commitData;
 
     }
 
-    public ResponseEntity<String> commitDetailRestCall(URI uri, String phabricatorToken, String commitPHID) {
+    public JSONObject commitDetailRestCall(String uri, String phabricatorToken, String commitPHID) throws UnirestException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"}, "
-                + "\"phids\":[\"" + commitPHID + "\"]}";
+        JsonNode response = Unirest.post(uri)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body("params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"}, "
+                        + "\"phids\":[\"" + commitPHID + "\"]}").asJson().getBody();
 
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject repoResult = response.getObject().getJSONObject("result");
+        JSONObject commitDetail= (JSONObject) repoResult.get("data");
+
+
+        return commitDetail;
 
     }
 
-    public ResponseEntity<String> commitParentsRestCall(URI uri, String phabricatorToken, String
-            commitIdentif, String repoCallsign) {
+    public JSONArray commitParentsRestCall(String uri, String phabricatorToken, String
+            commitIdentif, String repoCallsign) throws UnirestException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                + "\"commit\": \"" + commitIdentif + "\","
-                + "\"callsign\": \"" + repoCallsign + "\"}";
+        JsonNode response = Unirest.post(uri)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body("params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
+                        + "\"commit\": \"" + commitIdentif + "\","
+                        + "\"callsign\": \"" + repoCallsign + "\"}").asJson().getBody();
 
-        HttpEntity<?> httpEntity = new HttpEntity<Object>(body, headers());
-        return restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONArray commitParents = response.getArray();
 
-    }
+        return commitParents;
 
-    private HttpHeaders headers() {
-        //Phabricator API Header
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
-        return headers;
     }
 
 }
