@@ -19,24 +19,24 @@ public class PhabricatorBuildURITest {
 
         PhabricatorBuildURI url = new PhabricatorBuildURI();
 
-        String repoURL = "https://pb-dc.alm-latam.accenture.com/api/diffusion.repository.search";
-        String commitURL = "https://pb-dc.alm-latam.accenture.com/api/diffusion.commit.search";
-        String commitDetailURL = "https://pb-dc.alm-latam.accenture.com/api/diffusion.querycommits";
-        String commitParents = "https://pb-dc.alm-latam.accenture.com/api/diffusion.commitparentsquery";
+        URI repoURL = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.repository.search");
+        URI commitURL = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.commit.search");
+        URI commitDetailURL = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.querycommits");
+        URI commitParents = URI.create("https://pb-dc.alm-latam.accenture.com/api/diffusion.commitparentsquery");
 
 
-        String res;
+        URI res;
         res = url.buildRepoUrl();
-        assertEquals(repoURL, res.toString());
+        assertEquals(repoURL, res);
 
         res = url.buildCommitUrl();
-        assertEquals(commitURL, res.toString());
+        assertEquals(commitURL, res);
 
         res = url.buildCommitDetailUrl();
-        assertEquals(commitDetailURL, res.toString());
+        assertEquals(commitDetailURL, res);
 
         res = url.buildParentURL();
-        assertEquals(commitParents, res.toString());
+        assertEquals(commitParents, res);
 
     }
 

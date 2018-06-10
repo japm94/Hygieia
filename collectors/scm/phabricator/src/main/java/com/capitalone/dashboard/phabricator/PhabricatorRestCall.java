@@ -1,107 +1,141 @@
 package com.capitalone.dashboard.phabricator;
 
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import com.capitalone.dashboard.util.Supplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestOperations;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class PhabricatorRestCall {
     private static final Log LOG = LogFactory.getLog(PhabricatorRestCall.class);
 
+    private final RestOperations restOperations;
 
-    public JSONObject repoRestCall(String uri, String phabricatorToken, String repoURL) throws UnirestException {
+    @Autowired
+    public PhabricatorRestCall(Supplier<RestOperations> restOperationsSupplier) {
+
+        this.restOperations = restOperationsSupplier.get();
+    }
+
+
+    public JSONArray repoRestCall(URI uri, String phabricatorToken, String repoURL) throws ParseException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        JsonNode response = Unirest.post(uri)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body("params={\"__conduit__\":{\"token\":\""+phabricatorToken+"\"}," +
-                        "\"constraints\": {\"uris\": [\""+repoURL+"\"]}," +
-                        "\"queryKey\": \"active\"}").asJson().getBody();
+        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
+                + "\"constraints\": {\"uris\": [\"" + repoURL + "\"]},"
+                + "\"queryKey\": \"active\"}";
 
-        JSONObject repoResult = response.getObject().getJSONObject("result");
-        JSONArray repoData = repoResult.getJSONArray("data");
-        String repoPHID = null;
-        String repoCallsign = null;
 
-        for (int i = 0; i< repoData.length(); i++){
-            JSONObject obj = repoData.getJSONObject(i);
-            repoPHID = obj.getString("phid");
-            JSONObject fields = (JSONObject) obj.get("fields");
-            repoCallsign = fields.getString("callsign");
+        HttpEntity<String> httpEntity = new HttpEntity<>(body);
+        ResponseEntity<String> response = restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject jsonParentObject = paresAsObject(response);
+        JSONObject resultRepo = (JSONObject) jsonParentObject.get("result");
+        JSONArray dataRepo = (JSONArray) resultRepo.get("data");
+        return dataRepo;
+    }
+
+    public JSONArray commitRestCall(URI uri, String phabricatorToken, String repositoryPHID) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("POST " + uri);
         }
 
-        String values = "{ \"repoPHID\":\""+repoPHID+"\", \"callsign\":\""+repoCallsign+"\"}";
-        JSONObject repoJSON = new JSONObject(values);
-        return repoJSON;
+        //Phabricator API Boddy
+        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
+                + " \"constraints\":{ \"repositories\": [\"" + repositoryPHID + "\"]}}";
+
+        HttpEntity<?> httpEntity = new HttpEntity<Object>(body);
+        ResponseEntity<String> response = restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject jsonParentObject = paresAsObject(response);
+        JSONObject commit = (JSONObject) jsonParentObject.get("result");
+        JSONArray dataCommit = (JSONArray) commit.get("data");
+
+        return  dataCommit;
 
     }
 
-    public JSONArray commitRestCall(String uri, String phabricatorToken, String repositoryPHID) throws UnirestException {
+    public JSONObject commitDetailRestCall(URI uri, String phabricatorToken, String commitPHID) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        JsonNode response = Unirest.post(uri)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body("params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                        + " \"constraints\":{ \"repositories\": [\"" + repositoryPHID + "\"]}}").asJson().getBody();
+        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"}, "
+                + "\"phids\":[\"" + commitPHID + "\"]}";
 
-        JSONObject commitResult = response.getObject().getJSONObject("result");
-        JSONArray commitData = (JSONArray) commitResult.get("data");
+        HttpEntity<?> httpEntity = new HttpEntity<Object>(body);
+        ResponseEntity<String> response = restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject jsonParentObject = paresAsObject(response);
+        JSONObject commitDetail = (JSONObject) jsonParentObject.get("result");
+        JSONObject dataCommitDetail = (JSONObject) commitDetail.get("data");
+        JSONObject phidCommit = (JSONObject) dataCommitDetail.get(commitPHID);
 
-        return commitData;
+        return phidCommit;
 
     }
 
-    public JSONObject commitDetailRestCall(String uri, String phabricatorToken, String commitPHID) throws UnirestException {
+    public List<String> commitParentsRestCall(URI uri, String phabricatorToken, String
+            commitIdentif, String repoCallsign) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("POST " + uri);
         }
 
         //Phabricator API Boddy
-        JsonNode response = Unirest.post(uri)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body("params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"}, "
-                        + "\"phids\":[\"" + commitPHID + "\"]}").asJson().getBody();
+        String body = "params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
+                + "\"commit\": \"" + commitIdentif + "\","
+                + "\"callsign\": \"" + repoCallsign + "\"}";
 
-        JSONObject repoResult = response.getObject().getJSONObject("result");
-        JSONObject commitDetail= (JSONObject) repoResult.get("data");
+        HttpEntity<?> httpEntity = new HttpEntity<Object>(body);
+        ResponseEntity<String> response = restOperations.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+        JSONObject jsonParentObject = paresAsObject(response);
+        JSONArray resultCommitParents = (JSONArray) jsonParentObject.get("result");
+        List<String> parents = parentsList(resultCommitParents);
 
-
-        return commitDetail;
+        return parents;
 
     }
 
-    public JSONArray commitParentsRestCall(String uri, String phabricatorToken, String
-            commitIdentif, String repoCallsign) throws UnirestException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("POST " + uri);
+    private JSONObject paresAsObject(ResponseEntity<String> response) {
+        try {
+            return (JSONObject) new JSONParser().parse(response.getBody());
+        } catch (ParseException pe) {
+            LOG.error(pe.getMessage());
         }
+        return new JSONObject();
+    }
 
-        //Phabricator API Boddy
-        JsonNode response = Unirest.post(uri)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body("params={\"__conduit__\":{\"token\":\"" + phabricatorToken + "\"},"
-                        + "\"commit\": \"" + commitIdentif + "\","
-                        + "\"callsign\": \"" + repoCallsign + "\"}").asJson().getBody();
+    private List<String> parentsList(JSONArray parents ){
 
-        JSONArray commitParents = response.getArray();
+        String converter = parents.toString()
+                .replace("[", "")
+                .replace("]", "")
+                .replace("\"", "");
 
-        return commitParents;
+        String[] items = converter.split(",");
+        List<String> itemList = Arrays.asList(items);
 
+
+        return itemList;
+    }
+
+    private String str(JSONObject json, String key) {
+        Object value = json.get(key);
+        return value == null ? null : value.toString();
     }
 
 }

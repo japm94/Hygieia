@@ -41,11 +41,11 @@ public class GitSettings {
         this.protocol = protocol;
     }
 
-    public String getToken() {
+    public String getApiToken() {
         return apiToken;
     }
 
-    public void setToken(String apiToken) {
+    public void setApiToken(String apiToken) {
         this.apiToken = apiToken;
     }
 

@@ -2,7 +2,8 @@ package com.capitalone.dashboard.phabricator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import com.capitalone.dashboard.collector.GitSettings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class PhabricatorBuildURI {
+
+    GitSettings settings = new GitSettings();
 
     private static final Log LOG = LogFactory.getLog(PhabricatorBuildURI.class);
 
@@ -26,15 +29,15 @@ public class PhabricatorBuildURI {
     @SuppressWarnings({"PMD.NPathComplexity"})
     /*package
      */
-    public String buildRepoUrl() throws URISyntaxException {
+    public URI buildRepoUrl() throws URISyntaxException {
 
-//        String protocol = getProtocol();
-//        String host = getRepoHost();
+       String protocol = getProtocol();
+        String host = getRepoHost();
 
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
 
-        URI uri = builder.scheme(DEFAULT_PROTOCOL)
-                .host(PHABRICATOR_HOST_NAME)
+        URI uri = builder.scheme(protocol)
+                .host(host)
                 .pathSegment(SEGMENT_API)
                 .path(REPOSITORY_API)
                 .build(true).toUri();
@@ -43,14 +46,14 @@ public class PhabricatorBuildURI {
             LOG.debug("Rest Url: " + uri);
         }
 
-        return uri.toString();
+        return uri;
     }
 
-    public String buildCommitUrl() throws URISyntaxException {
-//
+    public URI buildCommitUrl() throws URISyntaxException {
+
 //        String protocol = getProtocol();
 //        String host = getRepoHost();
-//
+
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
 
         URI uri = builder.scheme(DEFAULT_PROTOCOL)
@@ -63,11 +66,11 @@ public class PhabricatorBuildURI {
             LOG.debug("Rest Url: " + uri);
         }
 
-        return uri.toString();
+        return uri;
     }
-//
-    public String buildParentURL() throws URISyntaxException {
-//
+
+    public URI buildParentURL() throws URISyntaxException {
+
 //        String protocol = getProtocol();
 //        String host = getRepoHost();
 
@@ -83,14 +86,14 @@ public class PhabricatorBuildURI {
             LOG.debug("Rest Url: " + uri);
         }
 
-        return uri.toString();
+        return uri;
     }
-//
-    public String buildCommitDetailUrl() throws URISyntaxException {
+
+    public URI buildCommitDetailUrl() throws URISyntaxException {
 //
 //        String protocol = getProtocol();
 //        String host = getRepoHost();
-//
+
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
 
         URI uri = builder.scheme(DEFAULT_PROTOCOL)
@@ -103,21 +106,21 @@ public class PhabricatorBuildURI {
             LOG.debug("Rest Url: " + uri);
         }
 
-        return uri.toString();
+        return uri;
     }
-//
-//    private String getProtocol() {
-//        return StringUtils.isBlank(settings.getProtocol()) ? DEFAULT_PROTOCOL : settings.getProtocol();
-//    }
-//
-//    private String getRepoHost() {
-//        String providedHost = settings.getHost();
-//        String apiHost;
-//        if (StringUtils.isBlank(providedHost)) {
-//            apiHost = PHABRICATOR_HOST_NAME;
-//        } else {
-//            apiHost = providedHost;
-//        }
-//        return apiHost;
-//    }
+
+    private String getProtocol() {
+        return StringUtils.isBlank(settings.getProtocol()) ? DEFAULT_PROTOCOL : settings.getProtocol();
+    }
+
+    private String getRepoHost() {
+        String providedHost = settings.getHost();
+        String apiHost;
+        if (StringUtils.isBlank(providedHost)) {
+            apiHost = PHABRICATOR_HOST_NAME;
+        } else {
+            apiHost = providedHost;
+        }
+        return apiHost;
+    }
 }
