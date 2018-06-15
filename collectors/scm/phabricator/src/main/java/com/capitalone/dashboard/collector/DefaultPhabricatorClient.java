@@ -31,7 +31,6 @@ public class DefaultPhabricatorClient implements GitClient {
 
     private final GitSettings settings;
 
-
     private final PhabricatorRestCall rest;
 
     @Autowired
@@ -70,8 +69,6 @@ public class DefaultPhabricatorClient implements GitClient {
             }
             // Get Commit Values
             JSONArray commitValues = rest.commitRestCall(commitURI, apiToken, repositoryPHID);
-
-
             for (Object item : commitValues) {
 
                 JSONObject obj = (JSONObject) item;
@@ -81,7 +78,9 @@ public class DefaultPhabricatorClient implements GitClient {
                 String sha = str(commitDetail, "id");
                 String author = str(commitDetail, "author");
                 String message = str(commitDetail, "summary");
-                long timestamp = Long.valueOf(str(commitDetail, "epoch"));
+                long value = (long) commitDetail.get("authorEpoch");
+                long timestamp = value*1000;
+
                 String commitIdentf = str(commitDetail, "identifier");
 
                 // Get Parents
@@ -101,7 +100,6 @@ public class DefaultPhabricatorClient implements GitClient {
                 commit.setNumberOfChanges(1);
                 commits.add(commit);
             }
-
             repo.setLastUpdated(System.currentTimeMillis());
 
         } catch (RestClientException re) {
