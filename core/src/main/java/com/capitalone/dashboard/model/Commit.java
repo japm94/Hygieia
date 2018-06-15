@@ -17,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *  TFS
  *  BitBucket
  *  Unfuddle
- *
+ *  Phabricator
  */
 @Document(collection="commits")
 @CompoundIndexes({
