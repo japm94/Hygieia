@@ -36,26 +36,17 @@ dbusername=${HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME:-dashboarduser}
 dbpassword=${HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD:-dbpassword}
 
 #Collector schedule (required)
-git.cron=${BITBUCKET_CRON:-0 0/5 * * * *}
+git.cron=${PHABRICATOR_CRON:-0 * * * * *}
 
 #mandatory
-git.host=${BITBUCKET_HOST:-myphabricatorrepo.com/}
-git.api=${BITBUCKET_API:-/rest/api/1.0/}
+git.host=${PHABRICATOR_HOST:-myphabricatorrepo.com/}
+git.apiToken=${PHABRICATOR_TOKEN:-<api-token>}
 
 #Maximum number of days to go back in time when fetching commits. Only applicable to Phabricator Cloud.
-git.commitThresholdDays=${BITBUCKET_COMMIT_THRESHOLD_DAYS:-15}
+git.commitThresholdDays=${PHABRICATOR_COMMIT_THRESHOLD_DAYS:-15}
 
 #Page size for rest calls. Only applicable to Phabricator Server.
 git.pageSize=${BITBUCKET_PAGE_SIZE:-25}
-
-#Phabricator product
-# Set to "cloud" to use Phabricator Cloud (formerly known as Phabricator)
-# Set to "server" to use Phabricator Server (formerly known as Stash)
-# More information can be found here: href="https://github.com/capitalone/Hygieia/issues/609
-git.product=${BITBUCKET_PRODUCT:-cloud}
-
-#API encryption key. Optional. See http://capitalone.github.io/Hygieia/setup.html#encryption-for-private-repos	
-git.key=${BITBUCKET_KEY:-}
 
 EOF
 
