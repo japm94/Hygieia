@@ -135,6 +135,12 @@ services:
     depends_on:
       - db-setup
 
+  phabricator-collector:
+    build: collector/scm/phabricator
+    image: hygieia-phabricator-scm-collector
+    depends_on:
+      - db-setup
+
   subversion-collector:
     build: collectors/scm/subversion
     image: hygieia-subversion-scm-collector
